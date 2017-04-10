@@ -103,7 +103,10 @@ dhallToStatement var0 expr0 = go (Dhall.Core.normalize expr0)
 
     adapt (UnsupportedExpression e) = UnsupportedSubexpression e
 
-    go (NaturalLit a) = go (IntegerLit (fromIntegral a))
+    go (BoolLit a) = do
+        go (TextLit (if a then "true" else "false"))
+    go (NaturalLit a) = do
+        go (IntegerLit (fromIntegral a))
     go (IntegerLit a) = do
         e <- first adapt (dhallToExpression (IntegerLit a))
         let bytes = "declare -r -i " <> var <> "=" <> e
@@ -146,8 +149,12 @@ dhallToStatement var0 expr0 = go (Dhall.Core.normalize expr0)
 dhallToExpression:: Expr s X -> Either ExpressionError ByteString
 dhallToExpression expr0 = go (Dhall.Core.normalize expr0)
   where
-    go (NaturalLit a) = go (IntegerLit (fromIntegral a))
-    go (IntegerLit a) = go (TextLit (Data.Text.Buildable.build a))
+    go (BoolLit a) = do
+        go (TextLit (if a then "true" else "false"))
+    go (NaturalLit a) = do
+        go (IntegerLit (fromIntegral a))
+    go (IntegerLit a) = do
+        go (TextLit (Data.Text.Buildable.build a))
     go (TextLit a) = do
         let text  = Data.Text.Lazy.Builder.toLazyText a
         let bytes = Data.Text.Encoding.encodeUtf8 (Data.Text.Lazy.toStrict text)
