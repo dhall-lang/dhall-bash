@@ -56,7 +56,7 @@ main = handle (do
                     Left  err   -> Control.Exception.throwIO err
                     Right bytes -> return bytes
             Just var -> do
-                case Dhall.Bash.dhallToStatement var expr' of
+                case Dhall.Bash.dhallToStatement expr' var of
                     Left  err   -> Control.Exception.throwIO err
                     Right bytes -> return bytes
         Data.ByteString.putStr bytes ))

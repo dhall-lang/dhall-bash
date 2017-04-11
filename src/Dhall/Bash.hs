@@ -2,7 +2,103 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE QuasiQuotes        #-}
 
-module Dhall.Bash where
+{-| This library exports two utilities for compiling Dhall expressions to Bash:
+
+    * `dhallToExpression`, which emits a Bash expression (i.e. a valid
+      right-hand side for an assignment)
+
+    * `dhallToStatement`, which emits a Bash @declare@ or @unset@ statement
+      suitable for use with `eval`
+
+    `dhallToExpression` only supports the conversion of primitive values, such
+    as:
+
+    * @Bool@ - which translates to a string that is either @"true"@ or @"false"@
+    * @Natural@ - which translates to a Bash integer
+    * @Integer@ - which translates to a Bash integer
+    * @Text@ - which translates to a Bash string (properly escaped if necessary)
+
+    The @dhall-to-bash@ executable by default tries to compile Dhall expressions
+    to Bash expressions using the `dhallToExpression` function.  For example:
+
+> $ dhall-to-bash <<< 'True'
+> true
+> $ dhall-to-bash <<< 'False'
+> false
+> $ dhall-to-bash <<< '1'
+> 1
+> $ dhall-to-bash <<< '+1'
+> 1
+> $ dhall-to-bash <<< '"ABC"'
+> ABC
+> $ dhall-to-bash <<< '" X "'
+> $' X '
+> $ dhall-to-bash <<< 'Natural/even +100'
+> true
+
+    The output of `dhallToExpression` is a valid Bash expression that can be
+    embedded anywhere Bash expressions are valid, such as the right-hand side of
+    an assignment statement:
+
+> $ FOO=$(dhall-to-bash <<< 'List/length Integer [1, 2, 3]')
+> $ echo "${FOO}"
+> 3
+
+    `dhallToStatement` supports a wider range of expressions by also adding
+    support for:
+
+    * @Optional@ - which translates to a variable which is either set or unset
+    * @List@ - which translates to a Bash array
+    * records - which translate to Bash associative arrays
+
+    The @dhall-to-bash@ executable can emit a statement instead of an expression
+    if you add the @--declare@ flag specifying which variable to set or unset.
+    For example:
+
+> $ dhall-to-bash --declare FOO <<< '[] : Optional Integer'
+> unset FOO
+> $ dhall-to-bash --declare FOO <<< '[1] : Optional Integer'
+> declare -r -i FOO=1
+> $ dhall-to-bash --declare FOO <<< '[[1] : Optional Integer] : Optional (Optional Integer)'
+> declare -r -i FOO=1
+> $ dhall-to-bash --declare FOO <<< '[[] : Optional Integer] : Optional (Optional Integer)'
+> unset FOO
+> $ dhall-to-bash --declare FOO <<< '[1, 2, 3]'
+> declare -r -a FOO=(1 2 3)
+> $ dhall-to-bash --declare FOO <<< '{ bar = 1, baz = True }'
+> declare -r -A FOO=([bar]=1 [baz]=true)
+
+    The output of `dhallToExpression` is either a @declare@ or @unset@ Bash
+    statement that you can pass to @eval@:
+
+> $ eval $(dhall-to-bash --declare FOO <<< '{ bar = 1, baz = True }')
+> $ echo "${FOO[bar]}"
+> 1
+> $ echo "${FOO[baz]}"
+> true
+
+    @dhall-to-bash@ declares variables read-only (i.e. @-r@) to prevent you from
+    accidentally overwriting, deleting or mutating variables:
+
+> $ eval $(dist/build/dhall-to-bash/dhall-to-bash --declare BAR <<< '1')
+> $ echo "${BAR"}
+> 1
+> $ unset BAR
+> bash: unset: BAR: cannot unset: readonly variable
+> $ eval $(dist/build/dhall-to-bash/dhall-to-bash --declare BAR <<< '2')
+> bash: declare: BAR: readonly variable
+
+-}
+
+module Dhall.Bash (
+    -- * Dhall to Bash
+      dhallToExpression
+    , dhallToStatement
+
+    -- * Exceptions
+    , ExpressionError(..)
+    , StatementError(..)
+    ) where
 
 import Control.Exception (Exception)
 import Data.Bifunctor (first)
@@ -27,6 +123,12 @@ import qualified Text.ShellEscape
 _ERROR :: Data.Text.Text
 _ERROR = "\ESC[1;31mError\ESC[0m"
 
+{-| This is the exception type for errors that might arise when translating
+    Dhall expressions to Bash statements
+
+    Because the majority of Dhall language features do not easily translate to
+    Bash this just returns the expression that failed
+-}
 data StatementError
     = UnsupportedStatement (Expr X X)
     | UnsupportedSubexpression (Expr X X)
@@ -64,6 +166,12 @@ The following Dhall expression could not be translated to a Bash expression:
 
 instance Exception StatementError
 
+{-| This is the exception type for errors that might arise when translating
+    Dhall expressions to Bash expressions
+
+    Because the majority of Dhall language features do not easily translate to
+    Bash this just returns the expression that failed
+-}
 data ExpressionError = UnsupportedExpression (Expr X X) deriving (Typeable)
 
 instance Show ExpressionError where
@@ -96,8 +204,27 @@ Tip: You can convert a record to a Bash statement using the --declare flag
 
 instance Exception ExpressionError
 
-dhallToStatement :: ByteString -> Expr s X -> Either StatementError ByteString
-dhallToStatement var0 expr0 = go (Dhall.Core.normalize expr0)
+{-| Compile a Dhall expression to a Bash statement that @declare@s or @unset@s a
+    a variable of your choice
+
+    This only supports:
+
+    * @Bool@s
+    * @Natural@s
+    * @Integer@s
+    * @Text@s
+    * @Optional@s
+    * @List@s
+    * records
+ -}
+dhallToStatement
+    :: Expr s X
+    -- ^ Dhall expression to compile
+    -> ByteString
+    -- ^ Variable to @declare@ or @unset@
+    -> Either StatementError ByteString
+    -- ^ Bash statement or compile failure
+dhallToStatement expr0 var0 = go (Dhall.Core.normalize expr0)
   where
     var = Text.ShellEscape.bytes (Text.ShellEscape.bash var0)
 
@@ -146,7 +273,20 @@ dhallToStatement var0 expr0 = go (Dhall.Core.normalize expr0)
         return bytes
     go e = Left (UnsupportedStatement e)
 
-dhallToExpression:: Expr s X -> Either ExpressionError ByteString
+{-| Compile a Dhall expression to a Bash expression
+
+    This only supports:
+
+    * @Bool@s
+    * @Natural@s
+    * @Integer@s
+    * @Text@s
+ -}
+dhallToExpression
+    :: Expr s X
+    -- ^ Dhall expression to compile
+    -> Either ExpressionError ByteString
+    -- ^ Bash expression or compile failure
 dhallToExpression expr0 = go (Dhall.Core.normalize expr0)
   where
     go (BoolLit a) = do
