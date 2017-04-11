@@ -16,7 +16,7 @@ $ nix-env -iA dhall-bash -f release.nix
 $ dhall-to-bash <<< '1'
 1
 $ dhall-to-bash <<< '"ABC" ++ "DEF"'
-ABCDEF'
+ABCDEF
 $ dhall-to-bash --declare FOO <<< '"ABC" ++ "DEF"'
 declare -r FOO=ABCDEF
 $ eval $(dhall-to-bash --declare FOO <<< '"ABC" ++ "DEF"')
