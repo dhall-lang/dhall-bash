@@ -13,7 +13,9 @@ let
     packageOverrides = pkgs: {
       haskellPackages = pkgs.haskellPackages.override {
         overrides = haskellPackagesNew: haskellPackagesOld: {
-          dhall-bash = haskellPackagesNew.callPackage ./default.nix { };
+          dhall-bash =
+           pkgs.haskell.lib.disableSharedExecutables
+             (haskellPackagesNew.callPackage ./default.nix { });
         };
       };
     };
