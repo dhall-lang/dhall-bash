@@ -31,7 +31,7 @@ Library
         base               >= 4.8.0.0 && < 5   ,
         bytestring                       < 0.11,
         containers                       < 0.6 ,
-        dhall              >= 1.0.1   && < 1.4 ,
+        dhall              >= 1.0.1   && < 1.5 ,
         neat-interpolation               < 0.4 ,
         shell-escape                     < 0.3 ,
         text-format                      < 0.4 ,
@@ -46,7 +46,7 @@ Executable dhall-to-bash
     Build-Depends:
         base             >= 4.8.0.0  && < 5   ,
         bytestring                      < 0.11,
-        dhall            >= 1.0.1    && < 1.4 ,
+        dhall            >= 1.0.1    && < 1.5 ,
         dhall-bash                            ,
         optparse-generic >= 1.1.1    && < 1.2 ,
         trifecta         >= 1.6      && < 1.7 ,
