@@ -105,7 +105,7 @@ import Data.Bifunctor (first)
 import Data.ByteString
 import Data.Monoid ((<>))
 import Data.Typeable (Typeable)
-import Dhall.Core (Expr(..))
+import Dhall.Core (Expr(..), Chunks(..))
 import Dhall.TypeCheck
 
 import qualified Data.Foldable
@@ -294,8 +294,8 @@ dhallToExpression expr0 = go (Dhall.Core.normalize expr0)
     go (NaturalLit a) = do
         go (IntegerLit (fromIntegral a))
     go (IntegerLit a) = do
-        go (TextLit (Data.Text.Buildable.build a))
-    go (TextLit a) = do
+        go (TextLit (Chunks [] (Data.Text.Buildable.build a)))
+    go (TextLit (Chunks [] a)) = do
         let text  = Data.Text.Lazy.Builder.toLazyText a
         let bytes = Data.Text.Encoding.encodeUtf8 (Data.Text.Lazy.toStrict text)
         return (Text.ShellEscape.bytes (Text.ShellEscape.bash bytes))
