@@ -34,11 +34,11 @@ data Options = Options
     } deriving (Generic, ParseRecord)
 
 main :: IO ()
-main = handle (do
+main = do
     GHC.IO.Encoding.setLocaleEncoding GHC.IO.Encoding.utf8
     Options {..} <- Options.Generic.getRecord "Compile Dhall to Bash"
 
-    (if unHelpful explain then Dhall.detailed else id) (do
+    (if unHelpful explain then Dhall.detailed else id) (handle (do
         inText <- Data.Text.Lazy.IO.getContents
 
         expr <- case Dhall.Parser.exprFromText (Directed "(stdin)" 0 0 0 0) inText of
