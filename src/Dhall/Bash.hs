@@ -115,7 +115,6 @@ import qualified Data.Text.Buildable
 import qualified Data.Text.Encoding
 import qualified Data.Text.Lazy
 import qualified Data.Text.Lazy.Builder
-import qualified Data.Vector
 import qualified Dhall.Core
 import qualified NeatInterpolation
 import qualified Text.ShellEscape
@@ -252,11 +251,9 @@ dhallToStatement expr0 var0 = go (Dhall.Core.normalize expr0)
                 <>  ")"
         return bytes
     go (OptionalLit _ bs) = do
-        if Data.Vector.null bs
-            then do
-                let bytes = "unset " <> var
-                return bytes
-            else go (Data.Vector.head bs)
+        case bs of
+            Nothing -> return ("unset " <> var)
+            Just b  -> go b
     go (RecordLit a) = do
         let process (k, v) = do
                 v' <- dhallToExpression v
