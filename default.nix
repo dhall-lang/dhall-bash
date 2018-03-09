@@ -1,16 +1,16 @@
 { mkDerivation, base, bytestring, containers, dhall
 , insert-ordered-containers, neat-interpolation, optparse-generic
-, shell-escape, stdenv, text, text-format, trifecta, vector
+, shell-escape, stdenv, text, text-format, trifecta
 }:
 mkDerivation {
   pname = "dhall-bash";
-  version = "1.0.9";
+  version = "1.0.10";
   src = ./.;
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
     base bytestring containers dhall insert-ordered-containers
-    neat-interpolation shell-escape text text-format vector
+    neat-interpolation shell-escape text text-format
   ];
   executableHaskellDepends = [
     base bytestring dhall optparse-generic text trifecta
