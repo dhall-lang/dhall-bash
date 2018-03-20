@@ -111,11 +111,11 @@ import Dhall.TypeCheck
 import qualified Data.Foldable
 import qualified Data.HashMap.Strict.InsOrd
 import qualified Data.Text
-import qualified Data.Text.Buildable
 import qualified Data.Text.Encoding
 import qualified Data.Text.Lazy
 import qualified Data.Text.Lazy.Builder
 import qualified Dhall.Core
+import qualified Formatting.Buildable
 import qualified NeatInterpolation
 import qualified Text.ShellEscape
 
@@ -291,7 +291,7 @@ dhallToExpression expr0 = go (Dhall.Core.normalize expr0)
     go (NaturalLit a) = do
         go (IntegerLit (fromIntegral a))
     go (IntegerLit a) = do
-        go (TextLit (Chunks [] (Data.Text.Buildable.build a)))
+        go (TextLit (Chunks [] (Formatting.Buildable.build a)))
     go (TextLit (Chunks [] a)) = do
         let text  = Data.Text.Lazy.Builder.toLazyText a
         let bytes = Data.Text.Encoding.encodeUtf8 (Data.Text.Lazy.toStrict text)
