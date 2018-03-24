@@ -32,7 +32,7 @@ Library
         bytestring                              < 0.11,
         containers                              < 0.6 ,
         formatting                >= 6.3     && < 6.4 ,
-        dhall                     >= 1.11.0  && < 1.12,
+        dhall                     >= 1.12.0  && < 1.13,
         insert-ordered-containers >= 0.1.0.1 && < 0.3 ,
         neat-interpolation                      < 0.4 ,
         shell-escape                            < 0.3 ,
