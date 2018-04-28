@@ -1,6 +1,6 @@
 { mkDerivation, base, bytestring, containers, dhall, formatting
 , insert-ordered-containers, neat-interpolation, optparse-generic
-, shell-escape, stdenv, text, trifecta
+, shell-escape, stdenv, text
 }:
 mkDerivation {
   pname = "dhall-bash";
@@ -13,7 +13,7 @@ mkDerivation {
     insert-ordered-containers neat-interpolation shell-escape text
   ];
   executableHaskellDepends = [
-    base bytestring dhall optparse-generic text trifecta
+    base bytestring dhall optparse-generic text
   ];
   description = "Compile Dhall to Bash";
   license = stdenv.lib.licenses.bsd3;

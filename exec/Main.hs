@@ -11,7 +11,6 @@ import Control.Exception (SomeException)
 import Data.ByteString (ByteString)
 import Options.Generic (Generic, ParseRecord, type (<?>)(..))
 import System.Exit (ExitCode(..))
-import Text.Trifecta.Delta (Delta(..))
 
 import qualified Control.Exception
 import qualified Data.ByteString
@@ -41,7 +40,7 @@ main = do
     (if unHelpful explain then Dhall.detailed else id) (handle (do
         inText <- Data.Text.Lazy.IO.getContents
 
-        expr <- case Dhall.Parser.exprFromText (Directed "(stdin)" 0 0 0 0) inText of
+        expr <- case Dhall.Parser.exprFromText "(stdin)" inText of
             Left  err  -> Control.Exception.throwIO err
             Right expr -> return expr
 
