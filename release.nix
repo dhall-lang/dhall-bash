@@ -1,14 +1,14 @@
-# You can build this repository using Nix by running:
-#
-#     $ nix-build -A dhall-bash release.nix
-#
-# You can also open up this repository inside of a Nix shell by running:
-#
-#     $ nix-shell -A dhall-bash.env release.nix
-#
-# ... and then Nix will supply the correct Haskell development environment for
-# you
 let
+  fetchNixpkgs = import ./nix/fetchNixpkgs.nix;
+
+  nixpkgs = fetchNixpkgs {
+    rev = "804060ff9a79ceb0925fe9ef79ddbf564a225d47";
+
+    sha256 = "01pb6p07xawi60kshsxxq1bzn8a0y4s5jjqvhkwps4f5xjmmwav3";
+
+    outputSha256 = "0ga345hgw6v2kzyhvf5kw96hf60mx5pbd9c4qj5q4nan4lr7nkxn";
+  };
+
   config = {
     packageOverrides = pkgs: {
       haskellPackages = pkgs.haskellPackages.override {
@@ -17,14 +17,14 @@ let
             haskellPackagesNew.callPackage ./nix/dhall.nix { };
 
           dhall-bash =
-           pkgs.haskell.lib.justStaticExecutables
-             (haskellPackagesNew.callPackage ./default.nix { });
+            pkgs.haskell.lib.failOnAllWarnings
+              (pkgs.haskell.lib.justStaticExecutables
+                (haskellPackagesNew.callPackage ./nix/dhall-bash.nix { })
+              );
 
-          formatting =
-            haskellPackagesNew.callPackage ./nix/formatting.nix { };
+          formatting = haskellPackagesOld.formatting_6_3_0;
 
-          prettyprinter =
-            haskellPackagesNew.callPackage ./nix/prettyprinter.nix { };
+          prettyprinter = haskellPackagesOld.prettyprinter_1_2_0_1;
         };
       };
     };

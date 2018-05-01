@@ -5,7 +5,7 @@
 mkDerivation {
   pname = "dhall-bash";
   version = "1.0.12";
-  src = ./.;
+  src = ./..;
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
