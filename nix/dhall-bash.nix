@@ -4,7 +4,7 @@
 }:
 mkDerivation {
   pname = "dhall-bash";
-  version = "1.0.12";
+  version = "1.0.13";
   src = ./..;
   isLibrary = true;
   isExecutable = true;
