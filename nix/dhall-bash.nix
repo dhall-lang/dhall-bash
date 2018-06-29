@@ -1,4 +1,4 @@
-{ mkDerivation, base, bytestring, containers, dhall, formatting
+{ mkDerivation, base, bytestring, containers, dhall
 , insert-ordered-containers, neat-interpolation, optparse-generic
 , shell-escape, stdenv, text
 }:
@@ -9,8 +9,8 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    base bytestring containers dhall formatting
-    insert-ordered-containers neat-interpolation shell-escape text
+    base bytestring containers dhall insert-ordered-containers
+    neat-interpolation shell-escape text
   ];
   executableHaskellDepends = [
     base bytestring dhall optparse-generic text
