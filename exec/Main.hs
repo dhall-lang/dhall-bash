@@ -14,7 +14,7 @@ import System.Exit (ExitCode(..))
 
 import qualified Control.Exception
 import qualified Data.ByteString
-import qualified Data.Text.Lazy.IO
+import qualified Data.Text.IO
 import qualified Dhall
 import qualified Dhall.Bash
 import qualified Dhall.Import
@@ -38,7 +38,7 @@ main = do
     Options {..} <- Options.Generic.getRecord "Compile Dhall to Bash"
 
     (if unHelpful explain then Dhall.detailed else id) (handle (do
-        inText <- Data.Text.Lazy.IO.getContents
+        inText <- Data.Text.IO.getContents
 
         expr <- case Dhall.Parser.exprFromText "(stdin)" inText of
             Left  err  -> Control.Exception.throwIO err
