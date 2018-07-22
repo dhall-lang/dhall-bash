@@ -31,7 +31,7 @@ Library
         base                      >= 4.8.0.0 && < 5   ,
         bytestring                              < 0.11,
         containers                              < 0.6 ,
-        dhall                     >= 1.15.0  && < 1.16,
+        dhall                     >= 1.15.0  && < 1.17,
         insert-ordered-containers >= 0.1.0.1 && < 0.3 ,
         neat-interpolation                      < 0.4 ,
         shell-escape                            < 0.3 ,
