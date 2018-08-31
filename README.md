@@ -1,4 +1,4 @@
-# `dhall-bash 1.0.14`
+# `dhall-bash 1.0.15`
 
 This `dhall-bash` package provides a Dhall to Bash compiler so that you can
 easily marshall Dhall values into your Bash scripts
