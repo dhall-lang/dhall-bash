@@ -109,10 +109,10 @@ import Dhall.Core (Expr(..), Chunks(..))
 import Dhall.TypeCheck
 
 import qualified Data.Foldable
-import qualified Data.HashMap.Strict.InsOrd
 import qualified Data.Text
 import qualified Data.Text.Encoding
 import qualified Dhall.Core
+import qualified Dhall.Map
 import qualified NeatInterpolation
 import qualified Text.ShellEscape
 
@@ -258,7 +258,7 @@ dhallToStatement expr0 var0 = go (Dhall.Core.normalize expr0)
                 let bytes = Data.Text.Encoding.encodeUtf8 k
                 let k'    = Text.ShellEscape.bytes (Text.ShellEscape.bash bytes)
                 return ("[" <> k' <> "]=" <> v')
-        kvs' <- first adapt (traverse process (Data.HashMap.Strict.InsOrd.toList a))
+        kvs' <- first adapt (traverse process (Dhall.Map.toList a))
         let bytes
                 =   "declare -r -A "
                 <>  var

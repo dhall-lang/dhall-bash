@@ -14,13 +14,23 @@ let
       haskellPackages = pkgs.haskellPackages.override {
         overrides = haskellPackagesNew: haskellPackagesOld: {
           dhall =
-            haskellPackagesNew.callPackage ./nix/dhall.nix { };
+            pkgs.haskell.lib.dontCheck
+              (haskellPackagesNew.callPackage ./nix/dhall.nix { });
 
           dhall-bash =
             pkgs.haskell.lib.failOnAllWarnings
               (pkgs.haskell.lib.justStaticExecutables
                 (haskellPackagesNew.callPackage ./nix/dhall-bash.nix { })
               );
+
+          megaparsec =
+            haskellPackagesNew.callPackage ./nix/megaparsec.nix { };
+
+          neat-interpolation =
+            haskellPackagesNew.callPackage ./nix/neat-interpolation.nix { };
+
+          repline =
+            haskellPackagesNew.callPackage ./nix/repline.nix { };
         };
       };
     };
