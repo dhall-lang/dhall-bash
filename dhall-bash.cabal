@@ -1,5 +1,5 @@
 Name: dhall-bash
-Version: 1.0.4
+Version: 1.0.16
 Cabal-Version: >=1.8.0.2
 Build-Type: Simple
 Tested-With: GHC == 7.10.2, GHC == 8.0.1
@@ -28,15 +28,13 @@ Source-Repository head
 Library
     Hs-Source-Dirs: src
     Build-Depends:
-        base               >= 4.8.0.0 && < 5   ,
-        bytestring                       < 0.11,
-        containers                       < 0.6 ,
-        dhall              >= 1.0.1   && < 1.7 ,
-        neat-interpolation               < 0.4 ,
-        shell-escape                     < 0.3 ,
-        text-format                      < 0.4 ,
-        text               >= 0.2     && < 1.3 ,
-        vector             >= 0.3     && < 0.13
+        base                      >= 4.8.0.0 && < 5   ,
+        bytestring                              < 0.11,
+        containers                              < 0.6 ,
+        dhall                     >= 1.18.0  && < 1.19,
+        neat-interpolation                      < 0.4 ,
+        shell-escape                            < 0.3 ,
+        text                      >= 0.2     && < 1.3
     Exposed-Modules: Dhall.Bash
     GHC-Options: -Wall
 
@@ -44,11 +42,10 @@ Executable dhall-to-bash
     Hs-Source-Dirs: exec
     Main-Is: Main.hs
     Build-Depends:
-        base             >= 4.8.0.0  && < 5   ,
-        bytestring                      < 0.11,
-        dhall            >= 1.0.1    && < 1.7 ,
+        base                                  ,
+        bytestring                            ,
+        dhall                                 ,
         dhall-bash                            ,
-        optparse-generic >= 1.1.1    && < 1.3 ,
-        trifecta         >= 1.6      && < 1.8 ,
-        text             >= 0.11.1.0 && < 1.3
+        optparse-generic >= 1.1.1    && < 1.4 ,
+        text
     GHC-Options: -Wall

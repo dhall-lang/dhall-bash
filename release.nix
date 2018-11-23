@@ -1,28 +1,43 @@
-# You can build this repository using Nix by running:
-#
-#     $ nix-build -A dhall-bash release.nix
-#
-# You can also open up this repository inside of a Nix shell by running:
-#
-#     $ nix-shell -A dhall-bash.env release.nix
-#
-# ... and then Nix will supply the correct Haskell development environment for
-# you
 let
+  fetchNixpkgs = import ./nix/fetchNixpkgs.nix;
+
+  nixpkgs = fetchNixpkgs {
+    rev = "1d4de0d552ae9aa66a5b8dee5fb0650a4372d148";
+
+    sha256 = "09qx58dp1kbj7cpzp8ahbqfbbab1frb12sh1qng87rybcaz0dz01";
+
+    outputSha256 = "0xpqc1fhkvvv5dv1zmas2j1q27mi7j7dgyjcdh82mlgl1q63i660";
+  };
+
   config = {
     packageOverrides = pkgs: {
       haskellPackages = pkgs.haskellPackages.override {
         overrides = haskellPackagesNew: haskellPackagesOld: {
+          dhall =
+            pkgs.haskell.lib.dontCheck
+              (haskellPackagesNew.callPackage ./nix/dhall.nix { });
+
           dhall-bash =
-           pkgs.haskell.lib.disableSharedExecutables
-             (haskellPackagesNew.callPackage ./default.nix { });
+            pkgs.haskell.lib.failOnAllWarnings
+              (pkgs.haskell.lib.justStaticExecutables
+                (haskellPackagesNew.callPackage ./nix/dhall-bash.nix { })
+              );
+
+          megaparsec =
+            haskellPackagesNew.callPackage ./nix/megaparsec.nix { };
+
+          neat-interpolation =
+            haskellPackagesNew.callPackage ./nix/neat-interpolation.nix { };
+
+          repline =
+            haskellPackagesNew.callPackage ./nix/repline.nix { };
         };
       };
     };
   };
 
   pkgs =
-    import <nixpkgs> { inherit config; };
+    import nixpkgs { inherit config; };
 
 in
   { dhall-bash = pkgs.haskellPackages.dhall-bash;

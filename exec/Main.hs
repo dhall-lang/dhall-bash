@@ -11,11 +11,10 @@ import Control.Exception (SomeException)
 import Data.ByteString (ByteString)
 import Options.Generic (Generic, ParseRecord, type (<?>)(..))
 import System.Exit (ExitCode(..))
-import Text.Trifecta.Delta (Delta(..))
 
 import qualified Control.Exception
 import qualified Data.ByteString
-import qualified Data.Text.Lazy.IO
+import qualified Data.Text.IO
 import qualified Dhall
 import qualified Dhall.Bash
 import qualified Dhall.Import
@@ -34,14 +33,14 @@ data Options = Options
     } deriving (Generic, ParseRecord)
 
 main :: IO ()
-main = handle (do
+main = do
     GHC.IO.Encoding.setLocaleEncoding GHC.IO.Encoding.utf8
     Options {..} <- Options.Generic.getRecord "Compile Dhall to Bash"
 
-    (if unHelpful explain then Dhall.detailed else id) (do
-        inText <- Data.Text.Lazy.IO.getContents
+    (if unHelpful explain then Dhall.detailed else id) (handle (do
+        inText <- Data.Text.IO.getContents
 
-        expr <- case Dhall.Parser.exprFromText (Directed "(stdin)" 0 0 0 0) inText of
+        expr <- case Dhall.Parser.exprFromText "(stdin)" inText of
             Left  err  -> Control.Exception.throwIO err
             Right expr -> return expr
 

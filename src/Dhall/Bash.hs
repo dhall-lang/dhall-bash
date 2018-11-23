@@ -105,18 +105,14 @@ import Data.Bifunctor (first)
 import Data.ByteString
 import Data.Monoid ((<>))
 import Data.Typeable (Typeable)
-import Dhall.Core (Expr(..))
+import Dhall.Core (Expr(..), Chunks(..))
 import Dhall.TypeCheck
 
 import qualified Data.Foldable
-import qualified Data.Map
 import qualified Data.Text
-import qualified Data.Text.Buildable
 import qualified Data.Text.Encoding
-import qualified Data.Text.Lazy
-import qualified Data.Text.Lazy.Builder
-import qualified Data.Vector
 import qualified Dhall.Core
+import qualified Dhall.Map
 import qualified NeatInterpolation
 import qualified Text.ShellEscape
 
@@ -147,7 +143,8 @@ The following Dhall expression could not be translated to a Bash statement:
 ↳ $txt
 |]
       where
-        txt = Data.Text.Lazy.toStrict (Dhall.Core.pretty e)
+        txt = Dhall.Core.pretty e
+
     show (UnsupportedSubexpression e) =
         -- Carefully note: No tip suggesting `--declare` since it won't work
         -- here (and the user is already using `--declare`)
@@ -162,7 +159,7 @@ The following Dhall expression could not be translated to a Bash expression:
 ↳ $txt
 |]
       where
-        txt = Data.Text.Lazy.toStrict (Dhall.Core.pretty e)
+        txt = Dhall.Core.pretty e
 
 instance Exception StatementError
 
@@ -187,7 +184,7 @@ The following Dhall expression could not be translated to a Bash expression:
 ↳ $txt$tip
 |]
       where
-        txt = Data.Text.Lazy.toStrict (Dhall.Core.pretty e)
+        txt = Dhall.Core.pretty e
 
         tip = case e of
             OptionalLit _ _ -> "\n\n" <> [NeatInterpolation.text|
@@ -252,18 +249,16 @@ dhallToStatement expr0 var0 = go (Dhall.Core.normalize expr0)
                 <>  ")"
         return bytes
     go (OptionalLit _ bs) = do
-        if Data.Vector.null bs
-            then do
-                let bytes = "unset " <> var
-                return bytes
-            else go (Data.Vector.head bs)
+        case bs of
+            Nothing -> return ("unset " <> var)
+            Just b  -> go b
     go (RecordLit a) = do
         let process (k, v) = do
                 v' <- dhallToExpression v
-                let bytes = Data.Text.Encoding.encodeUtf8 (Data.Text.Lazy.toStrict k)
+                let bytes = Data.Text.Encoding.encodeUtf8 k
                 let k'    = Text.ShellEscape.bytes (Text.ShellEscape.bash bytes)
                 return ("[" <> k' <> "]=" <> v')
-        kvs' <- first adapt (traverse process (Data.Map.toList a))
+        kvs' <- first adapt (traverse process (Dhall.Map.toList a))
         let bytes
                 =   "declare -r -A "
                 <>  var
@@ -294,9 +289,8 @@ dhallToExpression expr0 = go (Dhall.Core.normalize expr0)
     go (NaturalLit a) = do
         go (IntegerLit (fromIntegral a))
     go (IntegerLit a) = do
-        go (TextLit (Data.Text.Buildable.build a))
-    go (TextLit a) = do
-        let text  = Data.Text.Lazy.Builder.toLazyText a
-        let bytes = Data.Text.Encoding.encodeUtf8 (Data.Text.Lazy.toStrict text)
+        go (TextLit (Chunks [] (Data.Text.pack (show a))))
+    go (TextLit (Chunks [] a)) = do
+        let bytes = Data.Text.Encoding.encodeUtf8 a
         return (Text.ShellEscape.bytes (Text.ShellEscape.bash bytes))
     go e = Left (UnsupportedExpression e)
