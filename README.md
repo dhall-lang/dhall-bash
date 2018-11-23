@@ -1,5 +1,7 @@
 # `dhall-bash 1.0.16`
 
+This repository has moved to https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-bash
+
 This `dhall-bash` package provides a Dhall to Bash compiler so that you can
 easily marshall Dhall values into your Bash scripts
 
